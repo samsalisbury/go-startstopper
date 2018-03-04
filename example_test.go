@@ -2,6 +2,7 @@ package startstopper_test
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/samsalisbury/startstopper"
 )
@@ -13,11 +14,6 @@ type SomeProcessor struct {
 
 func (sp *SomeProcessor) Process(ch <-chan int) {
 	sp.Start()
-	select {
-	case <-sp.Stopped():
-		return
-	default:
-	}
 	for {
 		select {
 		case <-sp.Stopped():
@@ -28,11 +24,16 @@ func (sp *SomeProcessor) Process(ch <-chan int) {
 	}
 }
 
+// Extremely contrived example.
 func Example() {
 	p := &SomeProcessor{}
 	ch := make(chan int)
 	go func() {
 		for i := 0; i < 10; i++ {
+			// This sleep ensures p.Stop() called before the next ch <- i.
+			// There is no data race here, but this is still a race between
+			// the two channels.
+			time.Sleep(time.Millisecond)
 			ch <- i
 			if i == 4 {
 				p.Stop()
