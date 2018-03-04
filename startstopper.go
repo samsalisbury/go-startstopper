@@ -29,13 +29,13 @@ import "sync"
 // The zero StartStopper is ready to use, and begins in a "started" state.
 type StartStopper struct {
 	stoppedCh chan struct{}
-	sync.RWMutex
+	l         sync.RWMutex
 }
 
 // Stop closes the channel returned by stop since the last Start call.
 func (s *StartStopper) Stop() {
-	s.Lock()
-	defer s.Unlock()
+	s.l.Lock()
+	defer s.l.Unlock()
 	select {
 	default:
 		if s.stoppedCh == nil {
@@ -50,8 +50,8 @@ func (s *StartStopper) Stop() {
 // Start replaces the internal channel with a new open one.
 // All subsequent calls to Stopped will receive this channel.
 func (s *StartStopper) Start() {
-	s.Lock()
-	defer s.Unlock()
+	s.l.Lock()
+	defer s.l.Unlock()
 	if s.stoppedCh == nil {
 		s.stoppedCh = make(chan struct{})
 	}
@@ -66,8 +66,8 @@ func (s *StartStopper) Start() {
 // Stopped returns a channel that blocks forever until Stop is called on this
 // StartStopper.
 func (s *StartStopper) Stopped() <-chan struct{} {
-	s.RLock()
-	defer s.RUnlock()
+	s.l.RLock()
+	defer s.l.RUnlock()
 	if s.stoppedCh == nil {
 		s.stoppedCh = make(chan struct{})
 	}
@@ -77,8 +77,8 @@ func (s *StartStopper) Stopped() <-chan struct{} {
 // IsStopped is a convenience method that returns true if in stopped state (i.e.
 // the channel returned from Stopped right now is closed, or true otherwise.
 func (s *StartStopper) IsStopped() bool {
-	s.RLock()
-	defer s.RUnlock()
+	s.l.RLock()
+	defer s.l.RUnlock()
 	if s == nil {
 		return false
 	}
