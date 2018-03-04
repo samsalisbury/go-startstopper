@@ -17,7 +17,7 @@ func TestStartStopper_sync(t *testing.T) {
 	default:
 		// OK
 	case <-ss.Stopped():
-		t.Fatalf("NewStartStopper returned a stopped StartStopper:")
+		t.Fatalf("Zero StartStopper was stopped")
 	}
 	if ss.IsStopped() {
 		t.Fatalf("Stopped() returned true before Stop called.")
@@ -112,12 +112,21 @@ func TestStartStopper_async(t *testing.T) {
 
 }
 
+// BenchmarkStartStopper takes a single StartStopper, and each cycle stops and
+// restarts it; performing a select on its stopped chan after each call.
 func BenchmarkStartStopper(b *testing.B) {
-
 	ss := StartStopper{}
 	for i := 0; i < b.N; i++ {
 		ss.Stop()
+		select {
+		default:
+		case <-ss.Stopped():
+		}
 		ss.Start()
+		select {
+		default:
+		case <-ss.Stopped():
+		}
 	}
 
 }
