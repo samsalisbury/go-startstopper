@@ -15,10 +15,9 @@
 // this library, since existing close(channel) semantics work fine for that use
 // case.
 //
-// Where this library becomes useful is if you have a long-running goroutine
-// that contains state you do not want to give up and have to recreate later.
-// In this case, you can use this library to set your goroutine, and other
-// methods to effectively "disabled" until further notice.
+// Where this library becomes useful is if you have a long-lived service
+// instance that must go into a dormant state for some time, and later become
+// active again.
 package startstopper
 
 import "sync"
