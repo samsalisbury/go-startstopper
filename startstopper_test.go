@@ -12,7 +12,7 @@ import (
 func TestStartStopper_sync(t *testing.T) {
 
 	// Phase 1: New
-	ss := NewStartStopper()
+	ss := StartStopper{}
 	select {
 	default:
 		// OK
@@ -65,7 +65,7 @@ func TestStartStopper_sync(t *testing.T) {
 // statistically reasonable within a very wide margin of error.
 func TestStartStopper_async(t *testing.T) {
 
-	ss := NewStartStopper()
+	ss := StartStopper{}
 
 	// done is just used to bring down the goroutines below after the test.
 	done := make(chan struct{})
@@ -114,7 +114,7 @@ func TestStartStopper_async(t *testing.T) {
 
 func BenchmarkStartStopper(b *testing.B) {
 
-	ss := NewStartStopper()
+	ss := StartStopper{}
 	for i := 0; i < b.N; i++ {
 		ss.Stop()
 		ss.Start()

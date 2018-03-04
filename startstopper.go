@@ -25,14 +25,11 @@ import "sync"
 // StartStopper can be used in place of close(chan) to signal that something has
 // finished or stopped. It adds the ability to "reopen" that channel at a later
 // time in a concurrency-safe manner.
+//
+// The zero StartStopper is ready to use, and begins in a "started" state.
 type StartStopper struct {
 	stoppedCh chan struct{}
 	sync.RWMutex
-}
-
-// NewStartStopper initializes a ready to use StartStopper in a started state.
-func NewStartStopper() *StartStopper {
-	return &StartStopper{stoppedCh: make(chan struct{})}
 }
 
 // Stop closes the channel returned by stop since the last Start call.
@@ -46,7 +43,7 @@ func (s *StartStopper) Stop() {
 		}
 		close(s.stoppedCh)
 	case <-s.stoppedCh:
-		// no-op already closed.
+		// No-op; already stopped.
 	}
 }
 
@@ -60,6 +57,7 @@ func (s *StartStopper) Start() {
 	}
 	select {
 	default:
+		// No-op; already started.
 	case <-s.stoppedCh:
 		s.stoppedCh = make(chan struct{})
 	}
